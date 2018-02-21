@@ -171,16 +171,114 @@ var moves = {
             return helpers.findNearestUnownedDiamondMine(gameData);
         }
     },
-
-    // The "Coward"
-    // This hero will try really hard not to die.
-    coward: function (gameData, helpers) {
-        return helpers.findNearestHealthWell(gameData);
+    
+    // Take a look
+    lookaround: function (gd, hlp) {
+      var h = gd.activeHero;
+      var b = gd.board;
+      var ds = [['North', [-1, 0]], ['East', [0, 1]], ['South', [1, 0]], ['West', [0, -1]]];
+      var hft = h.distanceFromTop;
+      var hfl = h.distanceFromLeft;
+      var mr = Math.max(hfl + hft, -2 + b.lengthOfSide - hfl + b.lengthOfSide - hft);
+      var r = 0;
+      var t = c = [];
+      var s = i = j = 0;
+      var k = hft + '|' + hfl;
+      var v = {}; v[k] = true;
+      var cn = {};
+      var data = {};
+      var n = 'Stay';
+      tl = {0:[[n, [hft, hfl], b.tiles[hft][hfl]]]};
+      while (r < mr) { r++; tl[r] = [];
+        cn[r] = {f:0, e:0, eh:0, ehm:100};
+        data[r] = {e:[]};
+        for (j in tl[(r-1)]) {
+          t = tl[(r-1)][j];
+          for (i = 0; i <= 3; i++) {
+            c = [t[1][0] + ds[i][1][0], t[1][1] + ds[i][1][1]];
+            k = c[0] + '|' + c[1];
+            if (!v.hasOwnProperty(k) && hlp.validCoordinates(b, c[0], c[1])) {
+              v[k] = true;
+              s = b.tiles[c[0]][c[1]];
+              n = 'Stay';
+              if (r==1 && s.type === 'Unoccupied')
+                n = ds[i][0];
+              else
+                n = t[0];
+              tl[r][k] = [n, c, s];
+              
+//              console.log('== ' + c[0] + '|' +  c[1] + ' == ' + s.type);
+              
+              // counters
+              if (s.type === 'Hero'){
+                if (s.team == h.team) {
+                  cn[r].f++;
+                } else {
+                  cn[r].e++;
+                  cn[r].eh+= s.health;
+                  cn[r].ehm = Math.min(cn[r].ehm, s.health);
+                  data[r].e.push(s);
+                }
+              }
+              
+            }
+          }
+        }
+        
+        // logic
+//        console.log('== r' + r + ' ==');
+//        for (var k in cn[r]){
+//          console.log(k + ' == ' + cn[r][k]);
+//        }
+        
+        // run
+        if (cn[r].e * 30 >= h.health) {
+          console.log('run');
+          return moves.fear(gd, hlp, r, tl, cn, data);
+        }
+        
+      }
+      
+      // mine
+      console.log('mine');
+      return moves.selfishDiamondMiner(gd, hlp);
+    },
+    
+    // Run away
+    fear: function (gd, hlp, ar, tl, cn, data) {
+      var h = gd.activeHero;
+      var b = gd.board;
+      var hft = h.distanceFromTop;
+      var hfl = h.distanceFromLeft;
+      var c = [0, 0, 0];
+      for (var i = 1; i <= ar; i++)
+        for (var j = 0; j < data[ar].e.length; j++){
+          c[0]+= data[ar]['e'][j].distanceFromTop;
+          c[1]+= data[ar]['e'][j].distanceFromLeft;
+          c[2]++;
+        }
+      var n = 'Stay';
+      var d, s;
+      var cn = [Math.round(c[0]/c[2]), Math.round(c[1]/c[2])];
+      var dm = Math.abs(hft-cn[0]) + Math.abs(hfl-cn[1]);
+      for (j in tl[1]) {
+        //TODO проверка на наличие непустых
+        s = b.tiles[tl[1][j][1][0]][tl[1][j][1][1]];
+        if (s.type === 'Unoccupied'){
+          d = Math.abs(tl[1][j][1][0]-cn[0]) + Math.abs(tl[1][j][1][1]-cn[1]);
+          if (d > dm){
+            dm = d;
+            n = tl[1][j][0];
+          }
+        }
+      }
+//      console.log(n);
+      return n;
     }
 };
 
 // Set our hero's strategy
-var move =  moves.aggressor;
+var move =  moves.lookaround;
 
 // Export the move function here
 module.exports = move;
