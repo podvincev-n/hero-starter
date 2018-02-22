@@ -58,7 +58,7 @@ var enemyMoveFunction = function (gameData, helpers) {
 var currentTurn = 0;
 
 // Makes a new game with a 5x5 board
-var game = new Game(5);
+var game = new Game(10);
 
 game.maxTurn = cliOptions.turns;
 
@@ -67,17 +67,26 @@ game.maxTurn = cliOptions.turns;
  */
 function gameSetup () {
     // Add a health well in the middle of the board
-    game.addHealthWell(2,2);
+    game.addHealthWell(Math.floor(Math.random()*10),Math.floor(Math.random()*10));
+    game.addHealthWell(Math.floor(Math.random()*10),Math.floor(Math.random()*10));
+    game.addHealthWell(Math.floor(Math.random()*10),Math.floor(Math.random()*10));
 
     // Add diamond mines on either side of the health well
-    game.addDiamondMine(2,1);
-    game.addDiamondMine(2,3);
+    game.addDiamondMine(Math.floor(Math.random()*10),Math.floor(Math.random()*10));
+    game.addDiamondMine(Math.floor(Math.random()*10),Math.floor(Math.random()*10));
+    game.addDiamondMine(Math.floor(Math.random()*10),Math.floor(Math.random()*10));
 
     // Add your hero in the top left corner of the map (team 0)
-    game.addHero(0, 0, 'MyHero', 0);
+    game.addHero(Math.floor(Math.random()*10), Math.floor(Math.random()*10), 'MyHero', 0);
+    game.addHero(Math.floor(Math.random()*10), Math.floor(Math.random()*10), 'Friend1', 0);
+    game.addHero(Math.floor(Math.random()*10), Math.floor(Math.random()*10), 'Friend2', 0);
+    game.addHero(Math.floor(Math.random()*10), Math.floor(Math.random()*10), 'Friend2', 0);
 
     // Add an enemy hero in the bottom right corner of the map (team 1)
-    game.addHero(4, 4, 'Enemy', 1);
+    game.addHero(Math.floor(Math.random()*10), Math.floor(Math.random()*10), 'Enemy1', 1);
+    game.addHero(Math.floor(Math.random()*10), Math.floor(Math.random()*10), 'Enemy2', 1);
+    game.addHero(Math.floor(Math.random()*10), Math.floor(Math.random()*10), 'Enemy3', 1);
+    game.addHero(Math.floor(Math.random()*10), Math.floor(Math.random()*10), 'Enemy4', 1);
 
     if (cliOptions.wait){ // wait mode
         clearScreen();
